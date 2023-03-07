@@ -1,0 +1,14 @@
+@isTest
+global class MockHttpResponseGenerator implements HttpCalloutMock {
+    private static final String RESPONSE_BODY = '{"destination_addresses":["San Francisco, CA, USA"],"origin_addresses":["Mountain View, CA, USA"],"rows":[{"elements":[{"distance":{"text":"39.2 km","value":39224},"duration":{"text":"37 mins","value":2215},"status":"OK"}]}],"status":"OK"}';
+
+    global HTTPResponse respond(HTTPRequest req) {
+        
+        // Create a fake response
+        HttpResponse res = new HttpResponse();
+        res.setHeader('Content-Type', 'application/json');
+        res.setBody(RESPONSE_BODY);
+        res.setStatusCode(200);
+        return res;
+    }
+}

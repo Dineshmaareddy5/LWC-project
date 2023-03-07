@@ -1,0 +1,25 @@
+<template>
+    <lightning-card title="Google Maps Distance Calculator">
+        <div class="slds-m-around_medium">
+
+            <lightning-input label="Starting Address" value={startAddress} onchange={handleStartAddressChange}></lightning-input>
+            <lightning-input label="Ending Address" value={endAddress} onchange={handleEndAddressChange}></lightning-input>
+        </br>
+            <lightning-button label="Get Directions" onclick={handleCalculateDistance} variant="brand"></lightning-button>
+            
+            <div class="slds-m-top_medium">
+              <b> Distance:  {distance}</b>
+            </div>
+            <div class="slds-m-top_medium">
+                <b> Travel Time: {travelTime}</b>
+            </div>
+            <div class="slds-m-top_medium">
+                <b> Cost of Travel By Road: {costOfRTravel}$</b>
+            </div>
+            <div class="slds-m-top_medium">
+                <b> Cost of Travel By Air: {costOfATravel}$</b>
+            </div>
+        </div>
+    </lightning-card>
+
+</template>

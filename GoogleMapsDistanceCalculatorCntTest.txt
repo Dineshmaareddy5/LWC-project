@@ -1,0 +1,51 @@
+public with sharing class GoogleMapsDistanceCalculatorController {
+
+    String vHash = 'Sm9obiBEb2U=';
+    
+    @AuraEnabled(cacheable=true)
+    public static TravelDetailsWrapper calculateDistance(String startAddress, String endAddress) {
+        Decimal distance = null;
+        TravelDetailsWrapper wrapper = new TravelDetailsWrapper();
+        Http http = new Http();
+        HttpRequest request = new HttpRequest();
+        request.setEndpoint('https://maps.googleapis.com/maps/api/distancematrix/json?units=imperial&origins=' + EncodingUtil.urlEncode(startAddress, 'UTF-8') + '&destinations=' + EncodingUtil.urlEncode(endAddress, 'UTF-8') + '&key=AIzaSyCjK7tCEFUuv2xBwCVFt3zDnKatZxwxxfU');
+        request.setMethod('GET');
+        HttpResponse response = http.send(request);
+        system.debug('response -->'+response );
+        if (response.getStatusCode() == 200) {
+            Map<String, Object> result = (Map<String, Object>) JSON.deserializeUntyped(response.getBody());
+            system.debug('result -->'+result );
+            List<Object> rows = (List<Object>) result.get('rows');
+            Map<String, Object> row = (Map<String, Object>) rows[0];
+            List<Object> elements = (List<Object>) row.get('elements');
+            Map<String, Object> element = (Map<String, Object>) elements[0];
+            Map<String, Object> distanceMap = (Map<String, Object>) element.get('distance');
+            Map<String, Object> duration = (Map<String, Object>) element.get('duration');
+            
+            string des = string.valueOf(distanceMap.get('text')).split(' ')[0].replaceAll(',','');
+            system.debug('des -->'+des );
+            wrapper.distance = string.valueOf(distanceMap.get('text'));
+            wrapper.travelTime = string.valueOf(duration.get('text'));
+            wrapper.airCostOfTravel = calculateTravelCost('Flight',Decimal.valueOf(des));
+            wrapper.roadCostOfTravel = calculateTravelCost('Road',Decimal.valueOf(des));
+
+        }
+        return wrapper;
+    }
+    
+    public static Decimal calculateTravelCost(String modeOfTransport, Decimal distance) {
+        Transportation_Rates__mdt rate = Transportation_Rates__mdt.getInstance(modeOfTransport);
+        Decimal ratePerMile = rate.Rate_Per_mile__c;
+        
+        Decimal travelCost = distance * ratePerMile;
+        return travelCost;
+    }
+   
+
+    public class TravelDetailsWrapper {
+        @AuraEnabled public String distance;
+        @AuraEnabled public String travelTime;
+        @AuraEnabled public Decimal airCostOfTravel;
+        @AuraEnabled public Decimal roadCostOfTravel;
+    }
+}

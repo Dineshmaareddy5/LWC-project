@@ -1,0 +1,43 @@
+import { LightningElement, track } from 'lwc';
+import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+import calculateDistance from '@salesforce/apex/GoogleMapsDistanceCalculatorController.calculateDistance';
+
+export default class GoogleMapTravelInfo extends LightningElement {
+    
+    
+    @track startAddress;
+    @track endAddress;
+    @track distance;
+    @track travelTime;
+    @track costOfRTravel;
+    @track costOfATravel;
+    handleStartAddressChange(event) {
+        this.startAddress = event.target.value;
+    }
+
+    handleEndAddressChange(event) {
+        this.endAddress = event.target.value;
+    }
+
+    async handleCalculateDistance() {
+        try {
+            if (!this.startAddress || !this.endAddress) {
+                const event = new ShowToastEvent({
+                    title: 'Error',
+                    message: 'Please enter both Start and End addresses',
+                    variant: 'error'
+                });
+                this.dispatchEvent(event);
+                return;
+            }
+            const result = await calculateDistance({ startAddress: this.startAddress, endAddress: this.endAddress });
+            this.distance = result.distance;
+            this.travelTime = result.travelTime;
+            this.costOfRTravel = result.roadCostOfTravel;
+            this.costOfATravel = result.airCostOfTravel;
+            this.showResults = true;
+        } catch (error) {
+            console.error(error);
+        }
+    }
+}
